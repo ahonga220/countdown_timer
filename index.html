@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>倒數計時器</title>
+    <style>
+        body {
+        font-family: Arial;
+        text-align: center;
+        padding: 30px;
+        }
+        input {
+        font-size: 16px;
+        padding: 5px;
+        margin: 5px;
+        width: 80px;
+        text-align: center;
+        }
+        .info {
+        font-size: 22px;
+        margin: 20px;
+        }
+        button {
+        font-size: 18px;
+        padding: 10px 20px;
+        margin: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>倒數計時器</h1>
+
+    <div>
+        每次倒數幾分鐘：
+        <input type="number" id="minutesInput" value="1" min="1"> 分鐘
+    </div>
+    <div>
+        要倒數幾次：
+        <input type="number" id="roundsInput" value="3" min="1"> 次
+    </div>
+
+    <button onclick="startCountdown()">開始倒數</button>
+    <button onclick="stopCountdown()">停止倒數</button>
+
+    <div class="info">
+        第 <span id="currentRound">0</span> 次倒數中<br>
+        剩餘時間：<span id="timeDisplay">--:--</span>
+    </div>
+
+    <audio id="dingSound" src="ding.mp3" preload="auto"></audio>
+
+    <script>
+        let round = 0;
+        let totalRounds = 0;
+        let timeLeft = 0;
+        let timer = null;
+        let stopFlag = false;
+
+        function startCountdown() {
+        clearInterval(timer);
+        stopFlag = false;
+
+        round = 0;
+        totalRounds = parseInt(document.getElementById('roundsInput').value);
+        let minutes = parseInt(document.getElementById('minutesInput').value);
+
+        if (isNaN(minutes) || isNaN(totalRounds) || minutes <= 0 || totalRounds <= 0) {
+            alert("請輸入正確的數值！");
+            return;
+        }
+
+        function updateDisplay() {
+            let min = Math.floor(timeLeft / 60);
+            let sec = timeLeft % 60;
+            document.getElementById('timeDisplay').textContent =
+            `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+        }
+
+        function startOneRound() {
+            if (stopFlag) return;
+
+            round++;
+            document.getElementById('currentRound').textContent = round;
+            timeLeft = minutes * 60;
+
+            updateDisplay();
+
+            timer = setInterval(() => {
+            if (stopFlag) {
+                clearInterval(timer);
+                return;
+            }
+
+            timeLeft--;
+            updateDisplay();
+
+            if (timeLeft < 0) {
+                clearInterval(timer);
+                dingSound.play();
+                if (round < totalRounds) {
+                setTimeout(startOneRound, 1000); // 下一輪
+                } else {
+                document.getElementById('timeDisplay').textContent = "完成！";
+                }
+            }
+            }, 1000);
+        }
+
+        startOneRound();
+        }
+
+        function stopCountdown() {
+        stopFlag = true;
+        clearInterval(timer);
+        document.getElementById('timeDisplay').textContent = "已停止";
+        }
+    </script>
+
+</body>
+</html>
